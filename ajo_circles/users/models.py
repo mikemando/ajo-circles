@@ -47,6 +47,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.phone_number
     
+class UserProfile(models.Model):
+    pass
 
 class PhoneNumberVerification(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -64,8 +66,18 @@ class Wallet(models.Model):
 
 
 class Circle(models.Model):
+    SAVINGS_CYCLE_CHOICE = (
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quaterly', 'Quaterly'),
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=254)
+    circle_name = models.CharField(max_length=254)
+    circle_description = models.TextField()
+    circle_image = models.ImageField(upload_to='images/')
+    number_of_participants = models.CharField(max_length=245)
+    savings_cycle = models.CharField(max_length=10, choices=SAVINGS_CYCLE_CHOICE)
     goal_amount = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal('0.00'))
     current_amount = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal('0.00'))
     creator_id = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -86,7 +98,7 @@ class CircleMembership(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     circle_id = models.ForeignKey(Circle, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
+    membership_role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
 
     def __str__(self):
         return f"{self.user_id} is {self.role} of {self.circle_id}"
@@ -101,7 +113,7 @@ class Transaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal('0.00'))
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    transaction_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
