@@ -1,7 +1,7 @@
-from .serializers import UserRegisterationSerializer, OTPVerificationSerielizer
+from .serializers import UserRegisterationSerializer, CircleCreationSerializer
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -19,7 +19,6 @@ class UserRegistrationView(APIView):
 
 class BlacklistTokenUpdateView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = ()
 
     def post(self, request):
         try:
@@ -29,6 +28,17 @@ class BlacklistTokenUpdateView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+class CircleCreationView(APIView):
+    permission_classes = [IsAuthenticated]
 
-class PhoneNumberVerification():
+    def post(self, request):
+        serializer = CircleCreationSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            circle = serializer.save(creator_id=request.user.id)
+            return Response({'id': circle.id, 'message': 'Circle created successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PhoneNumberVerificationView():
     pass
